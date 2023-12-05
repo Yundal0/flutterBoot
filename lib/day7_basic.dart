@@ -17,6 +17,7 @@ class OverlayDemo extends StatefulWidget {
 
 class _OverlayDemoState extends State<OverlayDemo> {
   OverlayEntry? _overlayEntry;
+  final List<GlobalKey> _buttonKeys = List.generate(4, (_) => GlobalKey());
   final List<LayerLink> _layerLinks = List.generate(4, (_) => LayerLink());
   bool _isOverlayVisible = false;
 
@@ -34,8 +35,12 @@ class _OverlayDemoState extends State<OverlayDemo> {
     });
   }
 
-  OverlayEntry _createOverlayEntry(BuildContext context, int buttonIndex) {
-    return OverlayEntry(
+OverlayEntry _createOverlayEntry(BuildContext context, int buttonIndex) {
+  final RenderBox renderBox = _buttonKeys[buttonIndex].currentContext!.findRenderObject() as RenderBox;
+  final size = renderBox.size;
+  final offset = renderBox.localToGlobal(Offset.zero);
+
+  return OverlayEntry(
       builder: (context) => GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: _removeOverlay,
@@ -45,7 +50,7 @@ class _OverlayDemoState extends State<OverlayDemo> {
               child: CompositedTransformFollower(
                 link: _layerLinks[buttonIndex],
                 showWhenUnlinked: false,
-                offset: const Offset(210, -30),
+                                offset: Offset(size.width / 2, -30), // 오버레이 위치 조정
                 child: Material(
                   elevation: 4.0,
                   child: Container(
@@ -67,6 +72,7 @@ class _OverlayDemoState extends State<OverlayDemo> {
     return CompositedTransformTarget(
       link: _layerLinks[index],
       child: ElevatedButton(
+        key: _buttonKeys[index], // GlobalKey 할당
         style: ButtonStyle(
           minimumSize:
               MaterialStateProperty.all<Size>(const Size(double.infinity, 36)),
